@@ -306,7 +306,7 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
 
 		NTSTATUS status = FltLockUserBuffer(Data);
 		if (!NT_SUCCESS(status)) {
-			KdPrint(("Error 0x%08x locking user buffer in post-write\n"));
+			KdPrint(("Error 0x%08x locking user buffer in post-write\n", status));
 			__leave;
 		}
 
