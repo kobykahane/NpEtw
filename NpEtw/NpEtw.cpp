@@ -91,7 +91,6 @@ NTSTATUS FLTAPI NpEtwInstanceSetup(
     UNREFERENCED_PARAMETER(FltObjects);
     UNREFERENCED_PARAMETER(Flags);
     UNREFERENCED_PARAMETER(VolumeDeviceType);
-    UNREFERENCED_PARAMETER(VolumeFilesystemType);
 
     PAGED_CODE();
 
