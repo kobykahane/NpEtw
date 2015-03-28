@@ -19,7 +19,7 @@ __declspec(allocate("INIT")) CONST FLT_OPERATION_REGISTRATION OperationCallbacks
     { IRP_MJ_CREATE,              0, NpEtwPreOperation,       NpEtwPostOperation       },
     { IRP_MJ_CREATE_NAMED_PIPE,   0, NpEtwPreCreateNamedPipe, NpEtwPostCreateNamedPipe },
     { IRP_MJ_CLOSE,               0, NpEtwPreOperation,       NpEtwPostOperation       },
-    { IRP_MJ_READ,                0, nullptr,		          NpEtwPostRead            },
+    { IRP_MJ_READ,                0, nullptr,	              NpEtwPostRead            },
     { IRP_MJ_WRITE,               0, nullptr,                 NpEtwPostWrite           },
     { IRP_MJ_QUERY_INFORMATION,   0, NpEtwPreOperation,       NpEtwPostOperation       },
     { IRP_MJ_SET_INFORMATION,     0, NpEtwPreOperation,       NpEtwPostOperation       },
