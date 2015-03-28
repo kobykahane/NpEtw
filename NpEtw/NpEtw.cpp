@@ -11,7 +11,7 @@ extern "C" {
 
 PFLT_FILTER gFilterHandle = nullptr;
 
-CONST FLT_OPERATION_REGISTRATION OperationCallbacks[] = {
+__declspec(allocate("INIT")) CONST FLT_OPERATION_REGISTRATION OperationCallbacks[] = {
     { IRP_MJ_CREATE,              0, NpEtwPreOperation, NpEtwPostOperation },
     { IRP_MJ_CREATE_NAMED_PIPE,   0, NpEtwPreOperation, NpEtwPostOperation },
     { IRP_MJ_CLOSE,               0, NpEtwPreOperation, NpEtwPostOperation },
@@ -29,7 +29,7 @@ CONST FLT_OPERATION_REGISTRATION OperationCallbacks[] = {
     { IRP_MJ_OPERATION_END }
 };
 
-CONST FLT_REGISTRATION FilterRegistration = {
+__declspec(allocate("INIT")) CONST FLT_REGISTRATION FilterRegistration = {
     sizeof(FLT_REGISTRATION),             // Size
     FLT_REGISTRATION_VERSION,             // Version
     FLTFL_REGISTRATION_SUPPORT_NPFS_MSFS, // Flags
