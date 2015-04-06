@@ -138,7 +138,7 @@ FLT_PREOP_CALLBACK_STATUS FLTAPI NpEtwPreCreateNamedPipe(
 		// Get the pipe's name in the Filter Manager's cache here in pre-create when it is cheapest (can be picked up from FileObject->FileName).
 		NTSTATUS status = FltGetFileNameInformation(Data, FLT_FILE_NAME_OPENED | FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP, &fileNameInfo);
 		if (!NT_SUCCESS(status)) {
-			KdPrint(("Error 0x%08x retrieving pipe name in pre-create pipe.\n", status));
+            NpEtwTraceError(Create, "Retreiving pipe name in pre-createnp failed with status %!STATUS!", status);
 			__leave;
 		}
 	} __finally {
@@ -167,36 +167,37 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostCreateNamedPipe(
 		// We expect this to hit the cache.
 		NTSTATUS status = FltGetFileNameInformation(Data, FLT_FILE_NAME_OPENED | FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP, &fileNameInfo);
 		if (!NT_SUCCESS(status)) {
-			KdPrint(("Error 0x%08x retrieving pipe name in post create pipe.\n", status));
+            NpEtwTraceError(Create, "Retrieving pipe name in post-createnp failed with status %!STATUS!", status);			
 			__leave;
 		}
 
 		status = FltParseFileNameInformation(fileNameInfo);
 		if (!NT_SUCCESS(status)) {
-			KdPrint(("Error 0x%08x parsing pipe name in post create pipe.\n", status));
+            NpEtwTraceError(Create, "Parsing pipe name in post-createnp failed with status %!STATUS!", status);
 			__leave;
 		}
 
 		auto& createPipeParameters = Data->Iopb->Parameters.CreatePipe;
 		auto namedPipeCreateParameters = static_cast<PNAMED_PIPE_CREATE_PARAMETERS>(createPipeParameters.Parameters);
 
-		KdPrint(("IRP_MJ_CREATE_NAMED_PIPE\n"));
-		KdPrint(("\tIoStatus 0x%08x\n", Data->IoStatus.Status));
-		KdPrint(("\tFileObject 0x%p\n", FltObjects->FileObject));
-		KdPrint(("\tFileName %wZ\n", &fileNameInfo->Name));
-		KdPrint(("\tCreateOptions 0x%08x\n", createPipeParameters.Options));
-		KdPrint(("\tShareAccess 0x%08x\n", createPipeParameters.ShareAccess));
-		KdPrint(("\tIssuingThreadId 0x%p\n", PsGetThreadId(Data->Thread)));
-		KdPrint(("\tNamedPipeType 0x%08lx\n", namedPipeCreateParameters->NamedPipeType));
-		KdPrint(("\tReadMode 0x%08lx\n", namedPipeCreateParameters->ReadMode));
-		KdPrint(("\tCompletionMode 0x%08lx\n", namedPipeCreateParameters->CompletionMode));
-		KdPrint(("\tMaximumInstances 0x%08lx\n", namedPipeCreateParameters->MaximumInstances));
-		KdPrint(("\tInboundQuota 0x%08lx\n", namedPipeCreateParameters->InboundQuota));
-		KdPrint(("\tOutboundQuota 0x%08lx\n", namedPipeCreateParameters->OutboundQuota));
+        NpEtwTraceInfo(Create, "IRP_MJ_CREATE_NAMED_PIPE");
+        NpEtwTraceInfo(Create, "\tCbd 0x%p", Data);
+        NpEtwTraceInfo(Create, "\tIoStatus %!STATUS!", Data->IoStatus.Status);
+        NpEtwTraceInfo(Create, "\tFileObject 0x%p", FltObjects->FileObject);
+        NpEtwTraceInfo(Create, "\tFileName %wZ", &fileNameInfo->Name);
+        NpEtwTraceInfo(Create, "\tCreateOptions 0x%08x", createPipeParameters.Options);		
+		NpEtwTraceInfo(Create, "\tShareAccess 0x%08x", createPipeParameters.ShareAccess);
+		NpEtwTraceInfo(Create, "\tIssuingThreadId 0x%p", PsGetThreadId(Data->Thread));
+		NpEtwTraceInfo(Create, "\tNamedPipeType 0x%08lx", namedPipeCreateParameters->NamedPipeType);
+		NpEtwTraceInfo(Create, "\tReadMode 0x%08lx", namedPipeCreateParameters->ReadMode);
+		NpEtwTraceInfo(Create, "\tCompletionMode 0x%08lx", namedPipeCreateParameters->CompletionMode);
+		NpEtwTraceInfo(Create, "\tMaximumInstances 0x%08lx", namedPipeCreateParameters->MaximumInstances);
+		NpEtwTraceInfo(Create, "\tInboundQuota 0x%08lx", namedPipeCreateParameters->InboundQuota);
+		NpEtwTraceInfo(Create, "\tOutboundQuota 0x%08lx\n", namedPipeCreateParameters->OutboundQuota);
 		if (namedPipeCreateParameters->TimeoutSpecified) {
-			KdPrint(("\tDefaultTimeout 0x%I64x\n", namedPipeCreateParameters->DefaultTimeout.QuadPart));
+            NpEtwTraceInfo(Create, "\tDefaultTimeout 0x%I64x", namedPipeCreateParameters->DefaultTimeout.QuadPart);
 		}
-		KdPrint(("\tTimeoutSpecified %d\n", namedPipeCreateParameters->TimeoutSpecified));
+        NpEtwTraceInfo(Create, "\tTimeoutSpecified %d", namedPipeCreateParameters->TimeoutSpecified);
 	} __finally {
 		if (fileNameInfo) {
 			FltReleaseFileNameInformation(fileNameInfo);
@@ -217,10 +218,10 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostRead(
 
 	if (NT_SUCCESS(Data->IoStatus.Status)) {
 		if (!FltDoCompletionProcessingWhenSafe(Data, FltObjects, CompletionContext, Flags, NpEtwPostReadWhenSafe, &postOperationStatus)) {
-			KdPrint(("Posting pipe read completion failed.\n"));
+			NpEtwTraceError(ReadWrite, "Posting pipe read completion failed.");
 		}
 	} else {
-		KdPrint(("Pipe read failed with status 0x%08x,\n", Data->IoStatus.Status));
+		NpEtwTraceInfo(ReadWrite, "Pipe read Cbd 0x%p failed with status %!STATUS!", Data, Data->IoStatus.Status);
 	}
 
 	return postOperationStatus;
@@ -246,7 +247,7 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostReadWhenSafe(
 
 		NTSTATUS status = FltLockUserBuffer(Data);
 		if (!NT_SUCCESS(status)) {
-			KdPrint(("Error 0x%08x locking user buffer in post-read\n", status));
+			NpEtwTraceError(ReadWrite, "Locking user buffer in post-read failed with status %!STATUS!", status);
 			__leave;
 		}
 
@@ -258,13 +259,10 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostReadWhenSafe(
 				__leave;
 			}
 
-			KdPrint(("Pipe read data: "));
-			for (ULONG_PTR i = 0; i < Data->IoStatus.Information; ++i) {
-				KdPrint(("%02x", readBuffer[i]));
-			}
-			KdPrint(("\n"));
+            auto len = static_cast<short>(min(MAXSHORT, Data->IoStatus.Information));
+            NpEtwTraceInfo(ReadWrite, "Pipe read data: %!HEXDUMP!", log_xstr(readBuffer, len));
 		} __except (FsRtlIsNtstatusExpected(GetExceptionCode()) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
-			KdPrint(("Error 0x%08x accessing user buffer in post-read\n", GetExceptionCode()));
+            NpEtwTraceError(ReadWrite, "Accessing user buffer in post-read failed with status %!STATUS!", GetExceptionCode());
 		}
 	} __finally {
 
@@ -284,10 +282,10 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWrite(
 
 	if (NT_SUCCESS(Data->IoStatus.Status)) {
 		if (!FltDoCompletionProcessingWhenSafe(Data, FltObjects, CompletionContext, Flags, NpEtwPostWriteWhenSafe, &postOperationStatus)) {
-			KdPrint(("Posting pipe write completion failed.\n"));
+            NpEtwTraceError(ReadWrite, "Posting pipe write completion failed.");
 		}
 	} else {
-		KdPrint(("Pipe write failed with status 0x%08x\n", Data->IoStatus.Status));
+        NpEtwTraceError(ReadWrite, "Pipe write failed with status %!STATUS!", Data->IoStatus.Status);
 	}
 
 	return postOperationStatus;
@@ -313,7 +311,7 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
 
 		NTSTATUS status = FltLockUserBuffer(Data);
 		if (!NT_SUCCESS(status)) {
-			KdPrint(("Error 0x%08x locking user buffer in post-write\n", status));
+            NpEtwTraceError(ReadWrite, "Locking user buffer in post-write failed with status %!STATUS!", status);
 			__leave;
 		}
 
@@ -325,14 +323,10 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
 				__leave;
 			}
 
-			KdPrint(("Pipe write data: "));
-			for (ULONG_PTR i = 0; i < Data->IoStatus.Information; ++i) {
-				KdPrint(("%02x", writeBuffer[i]));
-			}
-			KdPrint(("\n"));
-		} __except (FsRtlIsNtstatusExpected(GetExceptionCode()) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
-		{
-			KdPrint(("Error 0x%08x accessing user buffer in post-write\n", GetExceptionCode()));
+            auto len = static_cast<short>(min(MAXSHORT, Data->IoStatus.Information));
+            NpEtwTraceInfo(ReadWrite, "Pipe write data: %!HEXDUMP!", log_xstr(writeBuffer, len));
+		} __except (FsRtlIsNtstatusExpected(GetExceptionCode()) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+            NpEtwTraceError(ReadWrite, "Accessing user buffer in post-write failed with status %!STATUS!", GetExceptionCode());
 		}
 	} __finally {
 
