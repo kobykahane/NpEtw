@@ -190,34 +190,42 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostCreateNamedPipe(
 
     NpEtwTraceFuncEntry(Create, TRACE_LEVEL_RESERVED6);
 
-	PFLT_FILE_NAME_INFORMATION fileNameInfo = nullptr;
+	
 	__try {
-		// We expect this to hit the cache.
-		NTSTATUS status = FltGetFileNameInformation(Data, FLT_FILE_NAME_OPENED | FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP, &fileNameInfo);
-		if (!NT_SUCCESS(status)) {
-            NpEtwTraceError(Create, "Retrieving pipe name in post-create/createnp failed with status %!STATUS!", status);			
-			__leave;
-		}
+        NpEtwTraceInfo(Create, "%s Cbd 0x%p FileObject 0x%p IoStatus %!STATUS!", 
+            FltGetIrpName(Data->Iopb->MajorFunction), FltObjects->FileObject, Data, Data->IoStatus.Status);
 
-		status = FltParseFileNameInformation(fileNameInfo);
-		if (!NT_SUCCESS(status)) {
-            NpEtwTraceError(Create, "Parsing pipe name in post-create/createnp failed with status %!STATUS!", status);
-			__leave;
-		}
+        if (NT_SUCCESS(Data->IoStatus.Status)) {
+            PFLT_FILE_NAME_INFORMATION fileNameInfo = nullptr;
+            __try {
+                // We expect this to hit the cache.
+                NTSTATUS status = FltGetFileNameInformation(Data, FLT_FILE_NAME_OPENED | FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP, &fileNameInfo);
+                if (!NT_SUCCESS(status)) {
+                    NpEtwTraceError(Create, "Retrieving pipe name in post-create/createnp failed with status %!STATUS!", status);
+                    __leave;
+                }
 
-        NpEtwTraceInfo(Create, "%s", FltGetIrpName(Data->Iopb->MajorFunction));
-        NpEtwTraceInfo(Create, "\tCbd 0x%p", Data);
-        NpEtwTraceInfo(Create, "\tIoStatus %!STATUS!", Data->IoStatus.Status);
-        NpEtwTraceInfo(Create, "\tFileObject 0x%p", FltObjects->FileObject);
-        NpEtwTraceInfo(Create, "\tFileName %wZ", &fileNameInfo->Name);
+                status = FltParseFileNameInformation(fileNameInfo);
+                if (!NT_SUCCESS(status)) {
+                    NpEtwTraceError(Create, "Parsing pipe name in post-create/createnp failed with status %!STATUS!", status);
+                    __leave;
+                }
 
+                NpEtwTraceInfo(Create, "\tFileName %wZ", &fileNameInfo->Name);
+            } __finally {
+                if (fileNameInfo) {
+                    FltReleaseFileNameInformation(fileNameInfo);
+                }
+            }
+        }
+        
         if (Data->Iopb->MajorFunction == IRP_MJ_CREATE_NAMED_PIPE) {
             auto& createPipeParameters = Data->Iopb->Parameters.CreatePipe;
             auto namedPipeCreateParameters = static_cast<PNAMED_PIPE_CREATE_PARAMETERS>(createPipeParameters.Parameters);
 
 
             NpEtwTraceInfo(Create, "\tCreateOptions 0x%08x", createPipeParameters.Options);
-            NpEtwTraceInfo(Create, "\tShareAccess 0x%08x", createPipeParameters.ShareAccess);
+            NpEtwTraceInfo(Create, "\tShareAccess 0x%04hx", createPipeParameters.ShareAccess);
             NpEtwTraceInfo(Create, "\tIssuingThreadId 0x%p", PsGetThreadId(Data->Thread));
             NpEtwTraceInfo(Create, "\tNamedPipeType 0x%08lx", namedPipeCreateParameters->NamedPipeType);
             NpEtwTraceInfo(Create, "\tReadMode 0x%08lx", namedPipeCreateParameters->ReadMode);
@@ -226,17 +234,19 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostCreateNamedPipe(
             NpEtwTraceInfo(Create, "\tInboundQuota 0x%08lx", namedPipeCreateParameters->InboundQuota);
             NpEtwTraceInfo(Create, "\tOutboundQuota 0x%08lx\n", namedPipeCreateParameters->OutboundQuota);
             if (namedPipeCreateParameters->TimeoutSpecified) {
-                NpEtwTraceInfo(Create, "\tDefaultTimeout 0x%I64x", namedPipeCreateParameters->DefaultTimeout.QuadPart);
+                NpEtwTraceInfo(Create, "\tDefaultTimeout 0x%llx", namedPipeCreateParameters->DefaultTimeout.QuadPart);
             }
             NpEtwTraceInfo(Create, "\tTimeoutSpecified %d", namedPipeCreateParameters->TimeoutSpecified);
+        } else if (Data->Iopb->MajorFunction == IRP_MJ_CREATE) {
+            auto& createParameters = Data->Iopb->Parameters.Create;
+
+            NpEtwTraceInfo(Create, "\tCreateOptions 0x%08x", createParameters.Options);
+            NpEtwTraceInfo(Create, "\tFileAttributes 0x%04hx", createParameters.FileAttributes);
+            NpEtwTraceInfo(Create, "\tShareAccess 0x%08x", createParameters.ShareAccess);            
         }
 	} __finally {
-		if (fileNameInfo) {
-			FltReleaseFileNameInformation(fileNameInfo);
-		}
+        NpEtwTraceFuncExit(Create, TRACE_LEVEL_RESERVED6);
 	}
-
-    NpEtwTraceFuncExit(Create, TRACE_LEVEL_RESERVED6);
 
 	return FLT_POSTOP_FINISHED_PROCESSING;
 }
