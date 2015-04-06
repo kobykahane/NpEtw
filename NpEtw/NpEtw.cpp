@@ -58,11 +58,13 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 	__try {
 		status = FltRegisterFilter(DriverObject, &FilterRegistration, &gFilterHandle);
 		if (!NT_SUCCESS(status)) {
+            NpEtwTraceError(General, "FltRegisterFilter failed with status %!STATUS!", status);
 			__leave;
 		}
 
 		status = FltStartFiltering(gFilterHandle);
 		if (!NT_SUCCESS(status)) {
+            NpEtwTraceError(General, "FltStartFiltering failed with status %!STATUS!", status);
 			__leave;
 		}
 	} __finally {
