@@ -288,7 +288,9 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostReadWhenSafe(
 		__try {
 			auto& readParams = Data->Iopb->Parameters.Read;
 
-			PCHAR readBuffer = static_cast<PCHAR>(MmGetSystemAddressForMdlSafe(readParams.MdlAddress, LowPagePriority));
+			PCHAR readBuffer = static_cast<PCHAR>(MmGetSystemAddressForMdlSafe(
+                readParams.MdlAddress,
+                LowPagePriority | MdlMappingNoWrite | MdlMappingNoExecute));
 			if (!readBuffer) {
 				__leave;
 			}
@@ -360,7 +362,9 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
 		__try {
 			auto& writeParams = Data->Iopb->Parameters.Write;
 
-			PCHAR writeBuffer = static_cast<PCHAR>(MmGetSystemAddressForMdlSafe(writeParams.MdlAddress, LowPagePriority));
+			PCHAR writeBuffer = static_cast<PCHAR>(MmGetSystemAddressForMdlSafe(
+                writeParams.MdlAddress,
+                LowPagePriority | MdlMappingNoWrite | MdlMappingNoExecute));
 			if (!writeBuffer) {
 				__leave;
 			}
