@@ -1,4 +1,5 @@
 #include "NpEtw.h"
+#include "NpEtw.tmh"
 
 extern "C" {
 
@@ -14,6 +15,7 @@ extern "C" {
 #endif
 
 PFLT_FILTER gFilterHandle = nullptr;
+PDRIVER_OBJECT gDriverObject = nullptr;
 
 __declspec(allocate("INIT")) CONST FLT_OPERATION_REGISTRATION OperationCallbacks[] = {
     { IRP_MJ_CREATE,              0, NpEtwPreOperation,       NpEtwPostOperation       },
@@ -46,7 +48,9 @@ __declspec(allocate("INIT")) CONST FLT_REGISTRATION FilterRegistration = {
 
 NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 {
-	UNREFERENCED_PARAMETER(RegistryPath);
+    WPP_INIT_TRACING(DriverObject, RegistryPath);
+
+    gDriverObject = DriverObject;
 
 	NTSTATUS status = STATUS_SUCCESS;
 	__try {
@@ -64,6 +68,8 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 			if (gFilterHandle) {
 				FltUnregisterFilter(gFilterHandle);
 			}
+
+            WPP_CLEANUP(DriverObject);
 		}
 	}
 
@@ -77,6 +83,8 @@ NTSTATUS FLTAPI NpEtwUnload(_In_ FLT_FILTER_UNLOAD_FLAGS Flags)
 	PAGED_CODE();
 
 	FltUnregisterFilter(gFilterHandle);
+
+    WPP_CLEANUP(gDriverObject);
 
 	return STATUS_SUCCESS;
 }
