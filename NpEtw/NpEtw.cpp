@@ -50,6 +50,8 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 {
     WPP_INIT_TRACING(DriverObject, RegistryPath);
 
+    NpEtwTraceFuncEntry(General, TRACE_LEVEL_VERBOSE);
+
     gDriverObject = DriverObject;
 
 	NTSTATUS status = STATUS_SUCCESS;
@@ -73,7 +75,9 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 		}
 	}
 
-	return status;
+    NpEtwTraceFuncExit(General, TRACE_LEVEL_VERBOSE);
+
+    return status;
 }
 
 NTSTATUS FLTAPI NpEtwUnload(_In_ FLT_FILTER_UNLOAD_FLAGS Flags)
@@ -82,7 +86,11 @@ NTSTATUS FLTAPI NpEtwUnload(_In_ FLT_FILTER_UNLOAD_FLAGS Flags)
 
 	PAGED_CODE();
 
+    NpEtwTraceFuncEntry(General, TRACE_LEVEL_VERBOSE);
+
 	FltUnregisterFilter(gFilterHandle);
+
+    NpEtwTraceFuncExit(General, TRACE_LEVEL_VERBOSE);
 
     WPP_CLEANUP(gDriverObject);
 
@@ -102,11 +110,19 @@ NTSTATUS FLTAPI NpEtwInstanceSetup(
 
     PAGED_CODE();
 
+    NpEtwTraceFuncEntry(General, TRACE_LEVEL_VERBOSE);
+
+    NTSTATUS status;
+
 	if (VolumeFilesystemType == FLT_FSTYPE_NPFS) {
-		return STATUS_SUCCESS;
+		status = STATUS_SUCCESS;
 	} else {
-		return STATUS_FLT_DO_NOT_ATTACH;
+		status = STATUS_FLT_DO_NOT_ATTACH;
 	}
+
+    NpEtwTraceFuncExit(General, TRACE_LEVEL_VERBOSE);
+
+    return status;
 }
 
 NTSTATUS FLTAPI NpEtwInstanceQueryTeardown(
@@ -118,6 +134,10 @@ NTSTATUS FLTAPI NpEtwInstanceQueryTeardown(
     UNREFERENCED_PARAMETER(Flags);
 
     PAGED_CODE();
+
+    NpEtwTraceFuncEntry(General, TRACE_LEVEL_VERBOSE);
+
+    NpEtwTraceFuncExit(General, TRACE_LEVEL_VERBOSE);
 
     return STATUS_SUCCESS;
 }
@@ -133,6 +153,8 @@ FLT_PREOP_CALLBACK_STATUS FLTAPI NpEtwPreCreateNamedPipe(
 
 	PAGED_CODE();
 
+    NpEtwTraceFuncEntry(Create, TRACE_LEVEL_RESERVED6);
+
 	PFLT_FILE_NAME_INFORMATION fileNameInfo = nullptr;
 	__try {
 		// Get the pipe's name in the Filter Manager's cache here in pre-create when it is cheapest (can be picked up from FileObject->FileName).
@@ -146,6 +168,8 @@ FLT_PREOP_CALLBACK_STATUS FLTAPI NpEtwPreCreateNamedPipe(
 			FltReleaseFileNameInformation(fileNameInfo);
 		}
 	}
+
+    NpEtwTraceFuncExit(Create, TRACE_LEVEL_RESERVED6);
 
 	return FLT_PREOP_SYNCHRONIZE;
 }
@@ -161,6 +185,8 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostCreateNamedPipe(
 	UNREFERENCED_PARAMETER(Flags);
 
 	PAGED_CODE();
+
+    NpEtwTraceFuncEntry(Create, TRACE_LEVEL_RESERVED6);
 
 	PFLT_FILE_NAME_INFORMATION fileNameInfo = nullptr;
 	__try {
@@ -204,6 +230,8 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostCreateNamedPipe(
 		}
 	}
 
+    NpEtwTraceFuncExit(Create, TRACE_LEVEL_RESERVED6);
+
 	return FLT_POSTOP_FINISHED_PROCESSING;
 }
 
@@ -214,6 +242,8 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostRead(
 	_In_ FLT_POST_OPERATION_FLAGS Flags
 	)
 {
+    NpEtwTraceFuncEntry(ReadWrite, TRACE_LEVEL_RESERVED6);
+
 	FLT_POSTOP_CALLBACK_STATUS postOperationStatus = FLT_POSTOP_FINISHED_PROCESSING;
 
 	if (NT_SUCCESS(Data->IoStatus.Status)) {
@@ -224,7 +254,9 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostRead(
 		NpEtwTraceInfo(ReadWrite, "Pipe read Cbd 0x%p failed with status %!STATUS!", Data, Data->IoStatus.Status);
 	}
 
-	return postOperationStatus;
+    NpEtwTraceFuncExit(ReadWrite, TRACE_LEVEL_RESERVED6);
+
+    return postOperationStatus;
 }
 
 FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostReadWhenSafe(
@@ -239,6 +271,8 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostReadWhenSafe(
 	UNREFERENCED_PARAMETER(Flags);
 
 	PAGED_CODE();
+
+    NpEtwTraceFuncEntry(ReadWrite, TRACE_LEVEL_RESERVED6);
 
 	__try {
 		if (Data->IoStatus.Information == 0) {
@@ -267,6 +301,8 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostReadWhenSafe(
 	} __finally {
 
 	}
+
+    NpEtwTraceFuncExit(ReadWrite, TRACE_LEVEL_RESERVED6);
 	
 	return FLT_POSTOP_FINISHED_PROCESSING;
 }
@@ -278,6 +314,8 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWrite(
 	_In_ FLT_POST_OPERATION_FLAGS Flags
 	)
 {
+    NpEtwTraceFuncEntry(ReadWrite, TRACE_LEVEL_RESERVED6);
+
 	FLT_POSTOP_CALLBACK_STATUS postOperationStatus = FLT_POSTOP_FINISHED_PROCESSING;
 
 	if (NT_SUCCESS(Data->IoStatus.Status)) {
@@ -287,6 +325,8 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWrite(
 	} else {
         NpEtwTraceError(ReadWrite, "Pipe write failed with status %!STATUS!", Data->IoStatus.Status);
 	}
+
+    NpEtwTraceFuncExit(ReadWrite, TRACE_LEVEL_RESERVED6);
 
 	return postOperationStatus;
 }
@@ -303,6 +343,8 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
 	UNREFERENCED_PARAMETER(Flags);
 
 	PAGED_CODE();
+
+    NpEtwTraceFuncEntry(ReadWrite, TRACE_LEVEL_RESERVED6);
 
 	__try {
 		if (Data->IoStatus.Information == 0) {
@@ -331,6 +373,8 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
 	} __finally {
 
 	}
+
+    NpEtwTraceFuncExit(ReadWrite, TRACE_LEVEL_RESERVED6);
 
 	return FLT_POSTOP_FINISHED_PROCESSING;
 }
