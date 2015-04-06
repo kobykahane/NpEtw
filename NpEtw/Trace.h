@@ -2,7 +2,7 @@
 
 // 084bff4c-ea0b-4739-96b1-e96cd25e1ba9
 #define WPP_CONTROL_GUIDS \
-    WPP_DEFINE_CONTROL_GUID(NpEtw, (84bff4c, ea0b, 4739, 96b1, e96cd25e1ba9), \
+    WPP_DEFINE_CONTROL_GUID(NpEtw, (084bff4c, ea0b, 4739, 96b1, e96cd25e1ba9), \
         WPP_DEFINE_BIT(General) \
         WPP_DEFINE_BIT(Create) \
         WPP_DEFINE_BIT(ReadWrite) \
@@ -42,3 +42,4 @@ __inline xstr_t log_xstr(void * p, short l) { xstr_t xs = { (char*) p, l }; retu
 // USEPREFIX(NpEtwTraceFuncEntry, "%!STDPREFIX! [%!FUNC!] -->");
 // USEPREFIX(NpEtwTraceFuncExit, "%!STDPREFIX! [%!FUNC!] <--");
 // end_wpp
+
