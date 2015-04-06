@@ -312,7 +312,8 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostReadWhenSafe(
 			}
 
             auto len = static_cast<short>(min(MAXSHORT, Data->IoStatus.Information));
-            NpEtwTraceInfo(ReadWrite, "Pipe read data: %!HEXDUMP!", log_xstr(readBuffer, len));
+            NpEtwTraceInfo(ReadWrite, "IRP_MJ_READ Cbd 0x%p FileObject 0x%p Information 0x%Ix Data: %!HEXDUMP!",
+                Data, FltObjects->FileObject, Data->IoStatus.Information, log_xstr(readBuffer, len));
 		} __except (FsRtlIsNtstatusExpected(GetExceptionCode()) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
             NpEtwTraceError(ReadWrite, "Accessing user buffer in post-read failed with status %!STATUS!", GetExceptionCode());
 		}
@@ -385,8 +386,9 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
 				__leave;
 			}
 
-            auto len = static_cast<short>(min(MAXSHORT, Data->IoStatus.Information));
-            NpEtwTraceInfo(ReadWrite, "Pipe write data: %!HEXDUMP!", log_xstr(writeBuffer, len));
+            auto len = static_cast<short>(min(MAXSHORT, Data->IoStatus.Information));            
+            NpEtwTraceInfo(ReadWrite, "IRP_MJ_WRITE Cbd 0x%p FileObject 0x%p Information 0x%Ix Data: %!HEXDUMP!",
+                Data, FltObjects->FileObject, Data->IoStatus.Information, log_xstr(writeBuffer, len));
 		} __except (FsRtlIsNtstatusExpected(GetExceptionCode()) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
             NpEtwTraceError(ReadWrite, "Accessing user buffer in post-write failed with status %!STATUS!", GetExceptionCode());
 		}
