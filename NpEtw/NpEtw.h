@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fltKernel.h>
+#include <ntstrsafe.h>
 #include <dontuse.h>
 
 #include "Trace.h"

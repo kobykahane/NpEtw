@@ -166,30 +166,35 @@ FLT_PREOP_CALLBACK_STATUS FLTAPI NpEtwPreCreateNamedPipe(
 	_Flt_CompletionContext_Outptr_ PVOID *CompletionContext
 	)
 {	
-	UNREFERENCED_PARAMETER(FltObjects);
-	UNREFERENCED_PARAMETER(CompletionContext);
+	UNREFERENCED_PARAMETER(FltObjects);	
 
 	PAGED_CODE();
 
     NpEtwTraceFuncEntry(Create, TRACE_LEVEL_RESERVED6);
 
+    FLT_PREOP_CALLBACK_STATUS cbStatus = FLT_PREOP_SUCCESS_NO_CALLBACK;
+
+    *CompletionContext = nullptr;
+
 	PFLT_FILE_NAME_INFORMATION fileNameInfo = nullptr;
 	__try {
-		// Get the pipe's name in the Filter Manager's cache here in pre-create when it is cheapest (can be picked up from FileObject->FileName).
+        // We pick up the name in pre-create for two reasons:
+        // - If the create fails, the name cannot be queried in post-create.
+        // - If the create succeeds, this is the cheapest place to pick it up since FileObject->FileName is valid.		
 		NTSTATUS status = FltGetFileNameInformation(Data, FLT_FILE_NAME_OPENED | FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP, &fileNameInfo);
 		if (!NT_SUCCESS(status)) {
             NpEtwTraceError(Create, "Retreiving pipe name in pre-create/createnp failed with status %!STATUS!", status);
 			__leave;
 		}
+
+        *CompletionContext = fileNameInfo;
+
+        cbStatus = FLT_PREOP_SYNCHRONIZE;
 	} __finally {
-		if (fileNameInfo) {
-			FltReleaseFileNameInformation(fileNameInfo);
-		}
+        NpEtwTraceFuncExit(Create, TRACE_LEVEL_RESERVED6);
 	}
 
-    NpEtwTraceFuncExit(Create, TRACE_LEVEL_RESERVED6);
-
-	return FLT_PREOP_SYNCHRONIZE;
+	return cbStatus;
 }
 
 FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostCreateNamedPipe(
@@ -199,70 +204,102 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostCreateNamedPipe(
 	_In_ FLT_POST_OPERATION_FLAGS Flags
 	)
 {
-	UNREFERENCED_PARAMETER(CompletionContext);
 	UNREFERENCED_PARAMETER(Flags);
 
 	PAGED_CODE();
 
     NpEtwTraceFuncEntry(Create, TRACE_LEVEL_RESERVED6);
-
 	
-	__try {
-        NpEtwTraceInfo(Create, "%s Cbd 0x%p FileObject 0x%p IoStatus %!STATUS!", 
-            FltGetIrpName(Data->Iopb->MajorFunction), FltObjects->FileObject, Data, Data->IoStatus.Status);
+    auto fileNameInfo = static_cast<PFLT_FILE_NAME_INFORMATION>(CompletionContext);
+    __try {
+        if (!fileNameInfo) {
+            NpEtwTraceError(Create, "Post create/createnp invoked without file name in completion context.");
+            __leave;
+        }
 
-        if (NT_SUCCESS(Data->IoStatus.Status)) {
-            PFLT_FILE_NAME_INFORMATION fileNameInfo = nullptr;
-            __try {
-                // We expect this to hit the cache.
-                NTSTATUS status = FltGetFileNameInformation(Data, FLT_FILE_NAME_OPENED | FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP, &fileNameInfo);
-                if (!NT_SUCCESS(status)) {
-                    NpEtwTraceError(Create, "Retrieving pipe name in post-create/createnp failed with status %!STATUS!", status);
-                    __leave;
-                }
+        WCHAR fileNameBuffer[64];
+        PWCHAR fileName = nullptr;
+        if ((fileNameInfo->Name.MaximumLength <= fileNameInfo->Name.Length) ||
+                (fileNameInfo->Name.Buffer[fileNameInfo->Name.Length / 2] != L'\0')) {
+            // Ugh.
+            NTSTATUS status = RtlStringCchCopyUnicodeString(fileNameBuffer, ARRAYSIZE(fileNameBuffer), &fileNameInfo->Name);
+            if (NT_ERROR(status)) {
+                NpEtwTraceError(Create, "Copying file name to buffer failed with status %!STATUS!", status); 
+                __leave;
+            }
+            fileName = fileNameBuffer;
 
-                status = FltParseFileNameInformation(fileNameInfo);
-                if (!NT_SUCCESS(status)) {
-                    NpEtwTraceError(Create, "Parsing pipe name in post-create/createnp failed with status %!STATUS!", status);
-                    __leave;
-                }
+            NpEtwTraceWarning(Create, "Got file name without null terminator in post-create/createnp.");
+        } else {
+            fileName = fileNameInfo->Name.Buffer;
+        }
 
-                NpEtwTraceInfo(Create, "\tFileName %wZ", &fileNameInfo->Name);
-            } __finally {
-                if (fileNameInfo) {
-                    FltReleaseFileNameInformation(fileNameInfo);
+        ULONG issuingThreadId = HandleToUlong(PsGetThreadId(Data->Thread));
+        auto& ioStatus = Data->IoStatus.Status;
+        auto& fileObject = FltObjects->FileObject;
+        auto& fileKey = FltObjects->FileObject->FsContext;
+
+        NpEtwTraceInfo(Create, "%s Cbd 0x%p FileObject 0x%p FileKey 0x%p IoStatus %!STATUS!",
+            FltGetIrpName(Data->Iopb->MajorFunction), Data, fileObject, fileKey, ioStatus);
+        NpEtwTraceInfo(Create, "\tIssuingThreadId 0x%08lx", issuingThreadId);
+
+        switch (Data->Iopb->MajorFunction) {
+        case IRP_MJ_CREATE:
+            {
+                auto& createParameters = Data->Iopb->Parameters.Create;
+                auto& createOptions = createParameters.Options;
+                auto& shareAccess = createParameters.ShareAccess;
+                auto& createAttributes = createParameters.FileAttributes;
+
+                NpEtwTraceInfo(Create, "\tCreateOptions 0x%08x", createOptions);
+                NpEtwTraceInfo(Create, "\tShareAccess 0x%04hx", shareAccess);
+                NpEtwTraceInfo(Create, "\tFileAttributes 0x%04hx", createAttributes);
+
+                EventWriteCreateEvent(
+                    nullptr, Data, fileObject, fileKey, issuingThreadId, ioStatus, createOptions, createAttributes, shareAccess, fileName);
+            }         
+            break;
+        case IRP_MJ_CREATE_NAMED_PIPE:
+            nullptr;
+            {
+                auto& createPipeParameters = Data->Iopb->Parameters.CreatePipe;
+                auto& createOptions = createPipeParameters.Options;
+                auto& shareAccess = createPipeParameters.ShareAccess;
+                auto namedPipeCreateParameters = static_cast<PNAMED_PIPE_CREATE_PARAMETERS>(createPipeParameters.Parameters);
+                auto& namedPipeType = namedPipeCreateParameters->NamedPipeType;
+                auto& readMode = namedPipeCreateParameters->ReadMode;
+                auto& completionMode = namedPipeCreateParameters->CompletionMode;
+                auto& maxInstances = namedPipeCreateParameters->MaximumInstances;
+                auto& inboundQuota = namedPipeCreateParameters->InboundQuota;
+                auto& outboundQuota = namedPipeCreateParameters->OutboundQuota;
+                auto& defaultTimeout = namedPipeCreateParameters->DefaultTimeout.QuadPart;
+                auto& timeoutSpecified = namedPipeCreateParameters->TimeoutSpecified;
+
+                NpEtwTraceInfo(Create, "\tCreateOptions 0x%08x", createOptions);
+                NpEtwTraceInfo(Create, "\tShareAccess 0x%04hx", shareAccess);
+                NpEtwTraceInfo(Create, "\tNamedPipeType 0x%08lx", namedPipeType);
+                NpEtwTraceInfo(Create, "\tReadMode 0x%08lx", readMode);
+                NpEtwTraceInfo(Create, "\tCompletionMode 0x%08lx", completionMode);
+                NpEtwTraceInfo(Create, "\tMaximumInstances 0x%08lx", maxInstances);
+                NpEtwTraceInfo(Create, "\tInboundQuota 0x%08lx", inboundQuota);
+                NpEtwTraceInfo(Create, "\tOutboundQuota 0x%08lx\n", outboundQuota);
+                if (namedPipeCreateParameters->TimeoutSpecified) {
+                    NpEtwTraceInfo(Create, "\tDefaultTimeout 0x%llx", defaultTimeout);
                 }
+                NpEtwTraceInfo(Create, "\tTimeoutSpecified %!BOOLEAN!", timeoutSpecified);
+
+                EventWriteCreateNamedPipeEvent(
+                    nullptr, Data, fileObject, fileKey, issuingThreadId, ioStatus, createOptions, shareAccess, fileName, namedPipeType, readMode,
+                    completionMode, maxInstances, inboundQuota, outboundQuota, timeoutSpecified, defaultTimeout);
             }
         }
-        
-        if (Data->Iopb->MajorFunction == IRP_MJ_CREATE_NAMED_PIPE) {
-            auto& createPipeParameters = Data->Iopb->Parameters.CreatePipe;
-            auto namedPipeCreateParameters = static_cast<PNAMED_PIPE_CREATE_PARAMETERS>(createPipeParameters.Parameters);
-
-
-            NpEtwTraceInfo(Create, "\tCreateOptions 0x%08x", createPipeParameters.Options);
-            NpEtwTraceInfo(Create, "\tShareAccess 0x%04hx", createPipeParameters.ShareAccess);
-            NpEtwTraceInfo(Create, "\tIssuingThreadId 0x%p", PsGetThreadId(Data->Thread));
-            NpEtwTraceInfo(Create, "\tNamedPipeType 0x%08lx", namedPipeCreateParameters->NamedPipeType);
-            NpEtwTraceInfo(Create, "\tReadMode 0x%08lx", namedPipeCreateParameters->ReadMode);
-            NpEtwTraceInfo(Create, "\tCompletionMode 0x%08lx", namedPipeCreateParameters->CompletionMode);
-            NpEtwTraceInfo(Create, "\tMaximumInstances 0x%08lx", namedPipeCreateParameters->MaximumInstances);
-            NpEtwTraceInfo(Create, "\tInboundQuota 0x%08lx", namedPipeCreateParameters->InboundQuota);
-            NpEtwTraceInfo(Create, "\tOutboundQuota 0x%08lx\n", namedPipeCreateParameters->OutboundQuota);
-            if (namedPipeCreateParameters->TimeoutSpecified) {
-                NpEtwTraceInfo(Create, "\tDefaultTimeout 0x%llx", namedPipeCreateParameters->DefaultTimeout.QuadPart);
-            }
-            NpEtwTraceInfo(Create, "\tTimeoutSpecified %d", namedPipeCreateParameters->TimeoutSpecified);
-        } else if (Data->Iopb->MajorFunction == IRP_MJ_CREATE) {
-            auto& createParameters = Data->Iopb->Parameters.Create;
-
-            NpEtwTraceInfo(Create, "\tCreateOptions 0x%08x", createParameters.Options);
-            NpEtwTraceInfo(Create, "\tFileAttributes 0x%04hx", createParameters.FileAttributes);
-            NpEtwTraceInfo(Create, "\tShareAccess 0x%08x", createParameters.ShareAccess);            
+    } __finally {
+        if (fileNameInfo) {
+            FltReleaseFileNameInformation(fileNameInfo);
         }
-	} __finally {
-        NpEtwTraceFuncExit(Create, TRACE_LEVEL_RESERVED6);
-	}
+    }
+
+    NpEtwTraceFuncExit(Create, TRACE_LEVEL_RESERVED6);
 
 	return FLT_POSTOP_FINISHED_PROCESSING;
 }
