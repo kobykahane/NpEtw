@@ -56,6 +56,12 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 
 	NTSTATUS status = STATUS_SUCCESS;
 	__try {
+        status = EventRegisterNpEtw();
+        if (!NT_SUCCESS(status)) {
+            NpEtwTraceError(General, "EventRegisterNpEtw failed with status %!STATUS!", status);
+            __leave;
+        }
+
 		status = FltRegisterFilter(DriverObject, &FilterRegistration, &gFilterHandle);
 		if (!NT_SUCCESS(status)) {
             NpEtwTraceError(General, "FltRegisterFilter failed with status %!STATUS!", status);
@@ -72,6 +78,11 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 			if (gFilterHandle) {
 				FltUnregisterFilter(gFilterHandle);
 			}
+
+            NTSTATUS etwStatus = EventUnregisterNpEtw();
+            if (!NT_SUCCESS(etwStatus)) {
+                NpEtwTraceError(General, "EventUnregisterNpEtw failed with status %!STATUS!", status);
+            }
 
             WPP_CLEANUP(DriverObject);
 		}
@@ -91,6 +102,11 @@ NTSTATUS FLTAPI NpEtwUnload(_In_ FLT_FILTER_UNLOAD_FLAGS Flags)
     NpEtwTraceFuncEntry(General, TRACE_LEVEL_VERBOSE);
 
 	FltUnregisterFilter(gFilterHandle);
+
+    NTSTATUS status = EventUnregisterNpEtw();
+    if (!NT_SUCCESS(status)) {
+        NpEtwTraceError(General, "EventUnregisterNpEtw failed with status %!STATUS!", status);
+    }
 
     NpEtwTraceFuncExit(General, TRACE_LEVEL_VERBOSE);
 

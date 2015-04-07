@@ -4,6 +4,7 @@
 #include <dontuse.h>
 
 #include "Trace.h"
+#include "NpEtwEvents.h"
 
 extern "C" {
 

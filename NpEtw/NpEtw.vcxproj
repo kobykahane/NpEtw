@@ -38,6 +38,7 @@
     <ResourceCompile Include="NpEtw.rc" />
     <ClCompile Include="NpEtw.cpp" />
     <Inf Include="NpEtw.inf" />
+    <ResourceCompile Include="$(IntDir)\NpEtwEvents.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3AA94CEC-3318-4405-8F5A-09380D32AF70}</ProjectGuid>
@@ -145,6 +146,7 @@
       <WppEnabled>true</WppEnabled>
       <WppScanConfigurationData>Trace.h</WppScanConfigurationData>
     </ClCompile>
+    <ResourceCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Link>
@@ -154,6 +156,7 @@
       <WppEnabled>true</WppEnabled>
       <WppScanConfigurationData>Trace.h</WppScanConfigurationData>
     </ClCompile>
+    <ResourceCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
@@ -163,6 +166,7 @@
       <WppEnabled>true</WppEnabled>
       <WppScanConfigurationData>Trace.h</WppScanConfigurationData>
     </ClCompile>
+    <ResourceCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
@@ -172,6 +176,7 @@
       <WppEnabled>true</WppEnabled>
       <WppScanConfigurationData>Trace.h</WppScanConfigurationData>
     </ClCompile>
+    <ResourceCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Link>
@@ -181,6 +186,7 @@
       <WppEnabled>true</WppEnabled>
       <WppScanConfigurationData>Trace.h</WppScanConfigurationData>
     </ClCompile>
+    <ResourceCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <Link>
@@ -190,6 +196,7 @@
       <WppEnabled>true</WppEnabled>
       <WppScanConfigurationData>Trace.h</WppScanConfigurationData>
     </ClCompile>
+    <ResourceCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <Link>
@@ -199,6 +206,7 @@
       <WppEnabled>true</WppEnabled>
       <WppScanConfigurationData>Trace.h</WppScanConfigurationData>
     </ClCompile>
+    <ResourceCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <Link>
@@ -208,6 +216,7 @@
       <WppEnabled>true</WppEnabled>
       <WppScanConfigurationData>Trace.h</WppScanConfigurationData>
     </ClCompile>
+    <ResourceCompile />
   </ItemDefinitionGroup>
   <ItemGroup>
     <FilesToPackage Include="$(TargetPath)" />
@@ -216,6 +225,18 @@
   <ItemGroup>
     <ClInclude Include="NpEtw.h" />
     <ClInclude Include="Trace.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <MessageCompile Include="NpEtwEvents.man">
+      <GenerateKernelModeLoggingMacros Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateKernelModeLoggingMacros>
+      <GenerateKernelModeLoggingMacros Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateKernelModeLoggingMacros>
+      <GenerateKernelModeLoggingMacros Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</GenerateKernelModeLoggingMacros>
+      <GenerateKernelModeLoggingMacros Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</GenerateKernelModeLoggingMacros>
+      <GenerateKernelModeLoggingMacros Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</GenerateKernelModeLoggingMacros>
+      <GenerateKernelModeLoggingMacros Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</GenerateKernelModeLoggingMacros>
+      <GenerateKernelModeLoggingMacros Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateKernelModeLoggingMacros>
+      <GenerateKernelModeLoggingMacros Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateKernelModeLoggingMacros>
+    </MessageCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

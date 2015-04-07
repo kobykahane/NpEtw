@@ -27,6 +27,9 @@
     <ResourceCompile Include="NpEtw.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+    <ResourceCompile Include="NpEtwEvents.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NpEtw.cpp">
@@ -40,5 +43,10 @@
     <ClInclude Include="Trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <MessageCompile Include="NpEtwEvents.man">
+      <Filter>Source Files</Filter>
+    </MessageCompile>
   </ItemGroup>
 </Project>
