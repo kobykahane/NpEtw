@@ -54,30 +54,30 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 
     gDriverObject = DriverObject;
 
-	NTSTATUS status = STATUS_SUCCESS;
-	__try {
+    NTSTATUS status = STATUS_SUCCESS;
+    __try {
         status = EventRegisterNpEtw();
         if (!NT_SUCCESS(status)) {
             NpEtwTraceError(General, "EventRegisterNpEtw failed with status %!STATUS!", status);
             __leave;
         }
 
-		status = FltRegisterFilter(DriverObject, &FilterRegistration, &gFilterHandle);
-		if (!NT_SUCCESS(status)) {
+        status = FltRegisterFilter(DriverObject, &FilterRegistration, &gFilterHandle);
+        if (!NT_SUCCESS(status)) {
             NpEtwTraceError(General, "FltRegisterFilter failed with status %!STATUS!", status);
-			__leave;
-		}
+            __leave;
+        }
 
-		status = FltStartFiltering(gFilterHandle);
-		if (!NT_SUCCESS(status)) {
+        status = FltStartFiltering(gFilterHandle);
+        if (!NT_SUCCESS(status)) {
             NpEtwTraceError(General, "FltStartFiltering failed with status %!STATUS!", status);
-			__leave;
-		}
-	} __finally {
-		if (!NT_SUCCESS(status)) {
-			if (gFilterHandle) {
-				FltUnregisterFilter(gFilterHandle);
-			}
+            __leave;
+        }
+    } __finally {
+        if (!NT_SUCCESS(status)) {
+            if (gFilterHandle) {
+                FltUnregisterFilter(gFilterHandle);
+            }
 
             NTSTATUS etwStatus = EventUnregisterNpEtw();
             if (!NT_SUCCESS(etwStatus)) {
@@ -85,8 +85,8 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
             }
 
             WPP_CLEANUP(DriverObject);
-		}
-	}
+        }
+    }
 
     NpEtwTraceFuncExit(General, TRACE_LEVEL_VERBOSE);
 
@@ -95,13 +95,13 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 
 NTSTATUS FLTAPI NpEtwUnload(_In_ FLT_FILTER_UNLOAD_FLAGS Flags)
 {
-	UNREFERENCED_PARAMETER(Flags);
+    UNREFERENCED_PARAMETER(Flags);
 
-	PAGED_CODE();
+    PAGED_CODE();
 
     NpEtwTraceFuncEntry(General, TRACE_LEVEL_VERBOSE);
 
-	FltUnregisterFilter(gFilterHandle);
+    FltUnregisterFilter(gFilterHandle);
 
     NTSTATUS status = EventUnregisterNpEtw();
     if (!NT_SUCCESS(status)) {
@@ -112,7 +112,7 @@ NTSTATUS FLTAPI NpEtwUnload(_In_ FLT_FILTER_UNLOAD_FLAGS Flags)
 
     WPP_CLEANUP(gDriverObject);
 
-	return STATUS_SUCCESS;
+    return STATUS_SUCCESS;
 }
 
 NTSTATUS FLTAPI NpEtwInstanceSetup(
@@ -132,11 +132,11 @@ NTSTATUS FLTAPI NpEtwInstanceSetup(
 
     NTSTATUS status;
 
-	if (VolumeFilesystemType == FLT_FSTYPE_NPFS) {
-		status = STATUS_SUCCESS;
-	} else {
-		status = STATUS_FLT_DO_NOT_ATTACH;
-	}
+    if (VolumeFilesystemType == FLT_FSTYPE_NPFS) {
+        status = STATUS_SUCCESS;
+    } else {
+        status = STATUS_FLT_DO_NOT_ATTACH;
+    }
 
     NpEtwTraceFuncExit(General, TRACE_LEVEL_VERBOSE);
 
@@ -161,14 +161,14 @@ NTSTATUS FLTAPI NpEtwInstanceQueryTeardown(
 }
 
 FLT_PREOP_CALLBACK_STATUS FLTAPI NpEtwPreCreateNamedPipe(
-	_Inout_ PFLT_CALLBACK_DATA Data,
-	_In_ PCFLT_RELATED_OBJECTS FltObjects,
-	_Flt_CompletionContext_Outptr_ PVOID *CompletionContext
-	)
+    _Inout_ PFLT_CALLBACK_DATA Data,
+    _In_ PCFLT_RELATED_OBJECTS FltObjects,
+    _Flt_CompletionContext_Outptr_ PVOID *CompletionContext
+    )
 {	
-	UNREFERENCED_PARAMETER(FltObjects);	
+    UNREFERENCED_PARAMETER(FltObjects);	
 
-	PAGED_CODE();
+    PAGED_CODE();
 
     NpEtwTraceFuncEntry(Create, TRACE_LEVEL_RESERVED6);
 
@@ -176,40 +176,40 @@ FLT_PREOP_CALLBACK_STATUS FLTAPI NpEtwPreCreateNamedPipe(
 
     *CompletionContext = nullptr;
 
-	PFLT_FILE_NAME_INFORMATION fileNameInfo = nullptr;
-	__try {
+    PFLT_FILE_NAME_INFORMATION fileNameInfo = nullptr;
+    __try {
         // We pick up the name in pre-create for two reasons:
         // - If the create fails, the name cannot be queried in post-create.
         // - If the create succeeds, this is the cheapest place to pick it up since FileObject->FileName is valid.		
-		NTSTATUS status = FltGetFileNameInformation(Data, FLT_FILE_NAME_OPENED | FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP, &fileNameInfo);
-		if (!NT_SUCCESS(status)) {
+        NTSTATUS status = FltGetFileNameInformation(Data, FLT_FILE_NAME_OPENED | FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP, &fileNameInfo);
+        if (!NT_SUCCESS(status)) {
             NpEtwTraceError(Create, "Retreiving pipe name in pre-create/createnp failed with status %!STATUS!", status);
-			__leave;
-		}
+            __leave;
+        }
 
         *CompletionContext = fileNameInfo;
 
         cbStatus = FLT_PREOP_SYNCHRONIZE;
-	} __finally {
+    } __finally {
         NpEtwTraceFuncExit(Create, TRACE_LEVEL_RESERVED6);
-	}
+    }
 
-	return cbStatus;
+    return cbStatus;
 }
 
 FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostCreateNamedPipe(
-	_Inout_ PFLT_CALLBACK_DATA Data,
-	_In_ PCFLT_RELATED_OBJECTS FltObjects,
-	_In_opt_ PVOID CompletionContext,
-	_In_ FLT_POST_OPERATION_FLAGS Flags
-	)
+    _Inout_ PFLT_CALLBACK_DATA Data,
+    _In_ PCFLT_RELATED_OBJECTS FltObjects,
+    _In_opt_ PVOID CompletionContext,
+    _In_ FLT_POST_OPERATION_FLAGS Flags
+    )
 {
-	UNREFERENCED_PARAMETER(Flags);
+    UNREFERENCED_PARAMETER(Flags);
 
-	PAGED_CODE();
+    PAGED_CODE();
 
     NpEtwTraceFuncEntry(Create, TRACE_LEVEL_RESERVED6);
-	
+    
     auto fileNameInfo = static_cast<PFLT_FILE_NAME_INFORMATION>(CompletionContext);
     __try {
         if (!fileNameInfo) {
@@ -301,27 +301,27 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostCreateNamedPipe(
 
     NpEtwTraceFuncExit(Create, TRACE_LEVEL_RESERVED6);
 
-	return FLT_POSTOP_FINISHED_PROCESSING;
+    return FLT_POSTOP_FINISHED_PROCESSING;
 }
 
 FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostRead(
-	_Inout_ PFLT_CALLBACK_DATA Data,
-	_In_ PCFLT_RELATED_OBJECTS FltObjects,
-	_In_opt_ PVOID CompletionContext,
-	_In_ FLT_POST_OPERATION_FLAGS Flags
-	)
+    _Inout_ PFLT_CALLBACK_DATA Data,
+    _In_ PCFLT_RELATED_OBJECTS FltObjects,
+    _In_opt_ PVOID CompletionContext,
+    _In_ FLT_POST_OPERATION_FLAGS Flags
+    )
 {
     NpEtwTraceFuncEntry(ReadWrite, TRACE_LEVEL_RESERVED6);
 
-	FLT_POSTOP_CALLBACK_STATUS postOperationStatus = FLT_POSTOP_FINISHED_PROCESSING;
+    FLT_POSTOP_CALLBACK_STATUS postOperationStatus = FLT_POSTOP_FINISHED_PROCESSING;
 
-	if (NT_SUCCESS(Data->IoStatus.Status)) {
-		if (!FltDoCompletionProcessingWhenSafe(Data, FltObjects, CompletionContext, Flags, NpEtwPostReadWhenSafe, &postOperationStatus)) {
-			NpEtwTraceError(ReadWrite, "Posting pipe read completion failed.");
-		}
-	} else {
-		NpEtwTraceInfo(ReadWrite, "Pipe read Cbd 0x%p failed with status %!STATUS!", Data, Data->IoStatus.Status);
-	}
+    if (NT_SUCCESS(Data->IoStatus.Status)) {
+        if (!FltDoCompletionProcessingWhenSafe(Data, FltObjects, CompletionContext, Flags, NpEtwPostReadWhenSafe, &postOperationStatus)) {
+            NpEtwTraceError(ReadWrite, "Posting pipe read completion failed.");
+        }
+    } else {
+        NpEtwTraceInfo(ReadWrite, "Pipe read Cbd 0x%p failed with status %!STATUS!", Data, Data->IoStatus.Status);
+    }
 
     NpEtwTraceFuncExit(ReadWrite, TRACE_LEVEL_RESERVED6);
 
@@ -329,40 +329,40 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostRead(
 }
 
 FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostReadWhenSafe(
-	_Inout_ PFLT_CALLBACK_DATA Data,
-	_In_ PCFLT_RELATED_OBJECTS FltObjects,
-	_In_opt_ PVOID CompletionContext,
-	_In_ FLT_POST_OPERATION_FLAGS Flags
-	)
+    _Inout_ PFLT_CALLBACK_DATA Data,
+    _In_ PCFLT_RELATED_OBJECTS FltObjects,
+    _In_opt_ PVOID CompletionContext,
+    _In_ FLT_POST_OPERATION_FLAGS Flags
+    )
 {
-	UNREFERENCED_PARAMETER(FltObjects);
-	UNREFERENCED_PARAMETER(CompletionContext);
-	UNREFERENCED_PARAMETER(Flags);
+    UNREFERENCED_PARAMETER(FltObjects);
+    UNREFERENCED_PARAMETER(CompletionContext);
+    UNREFERENCED_PARAMETER(Flags);
 
-	PAGED_CODE();
+    PAGED_CODE();
 
     NpEtwTraceFuncEntry(ReadWrite, TRACE_LEVEL_RESERVED6);
 
-	__try {
-		if (Data->IoStatus.Information == 0) {
-			__leave;
-		}
+    __try {
+        if (Data->IoStatus.Information == 0) {
+            __leave;
+        }
 
-		NTSTATUS status = FltLockUserBuffer(Data);
-		if (!NT_SUCCESS(status)) {
-			NpEtwTraceError(ReadWrite, "Locking user buffer in post-read failed with status %!STATUS!", status);
-			__leave;
-		}
+        NTSTATUS status = FltLockUserBuffer(Data);
+        if (!NT_SUCCESS(status)) {
+            NpEtwTraceError(ReadWrite, "Locking user buffer in post-read failed with status %!STATUS!", status);
+            __leave;
+        }
 
-		__try {
-			auto& readParams = Data->Iopb->Parameters.Read;
+        __try {
+            auto& readParams = Data->Iopb->Parameters.Read;
 
-			PUCHAR readBuffer = static_cast<PUCHAR>(MmGetSystemAddressForMdlSafe(
+            PUCHAR readBuffer = static_cast<PUCHAR>(MmGetSystemAddressForMdlSafe(
                 readParams.MdlAddress,
                 LowPagePriority | MdlMappingNoWrite | MdlMappingNoExecute));
-			if (!readBuffer) {
-				__leave;
-			}
+            if (!readBuffer) {
+                __leave;
+            }
 
             auto len = static_cast<short>(min(MAXSHORT, Data->IoStatus.Information));           
             NpEtwTraceInfo(ReadWrite, "IRP_MJ_READ Cbd 0x%p FileObject 0x%p Information 0x%Ix Data: %!HEXDUMP!",
@@ -370,77 +370,77 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostReadWhenSafe(
             EventWriteReadEvent(
                 nullptr, Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, HandleToUlong(PsGetThreadId(Data->Thread)),
                 static_cast<ULONG>(Data->IoStatus.Information), Data->Flags, readBuffer);
-		} __except (FsRtlIsNtstatusExpected(GetExceptionCode()) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+        } __except (FsRtlIsNtstatusExpected(GetExceptionCode()) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
             NpEtwTraceError(ReadWrite, "Accessing user buffer in post-read failed with status %!STATUS!", GetExceptionCode());
-		}
-	} __finally {
+        }
+    } __finally {
 
-	}
+    }
 
     NpEtwTraceFuncExit(ReadWrite, TRACE_LEVEL_RESERVED6);
-	
-	return FLT_POSTOP_FINISHED_PROCESSING;
+    
+    return FLT_POSTOP_FINISHED_PROCESSING;
 }
 
 FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWrite(
-	_Inout_ PFLT_CALLBACK_DATA Data,
-	_In_ PCFLT_RELATED_OBJECTS FltObjects,
-	_In_opt_ PVOID CompletionContext,
-	_In_ FLT_POST_OPERATION_FLAGS Flags
-	)
+    _Inout_ PFLT_CALLBACK_DATA Data,
+    _In_ PCFLT_RELATED_OBJECTS FltObjects,
+    _In_opt_ PVOID CompletionContext,
+    _In_ FLT_POST_OPERATION_FLAGS Flags
+    )
 {
     NpEtwTraceFuncEntry(ReadWrite, TRACE_LEVEL_RESERVED6);
 
-	FLT_POSTOP_CALLBACK_STATUS postOperationStatus = FLT_POSTOP_FINISHED_PROCESSING;
+    FLT_POSTOP_CALLBACK_STATUS postOperationStatus = FLT_POSTOP_FINISHED_PROCESSING;
 
-	if (NT_SUCCESS(Data->IoStatus.Status)) {
-		if (!FltDoCompletionProcessingWhenSafe(Data, FltObjects, CompletionContext, Flags, NpEtwPostWriteWhenSafe, &postOperationStatus)) {
+    if (NT_SUCCESS(Data->IoStatus.Status)) {
+        if (!FltDoCompletionProcessingWhenSafe(Data, FltObjects, CompletionContext, Flags, NpEtwPostWriteWhenSafe, &postOperationStatus)) {
             NpEtwTraceError(ReadWrite, "Posting pipe write completion failed.");
-		}
-	} else {
+        }
+    } else {
         NpEtwTraceError(ReadWrite, "Pipe write failed with status %!STATUS!", Data->IoStatus.Status);
-	}
+    }
 
     NpEtwTraceFuncExit(ReadWrite, TRACE_LEVEL_RESERVED6);
 
-	return postOperationStatus;
+    return postOperationStatus;
 }
 
 FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
-	_Inout_ PFLT_CALLBACK_DATA Data,
-	_In_ PCFLT_RELATED_OBJECTS FltObjects,
-	_In_opt_ PVOID CompletionContext,
-	_In_ FLT_POST_OPERATION_FLAGS Flags
-	)
+    _Inout_ PFLT_CALLBACK_DATA Data,
+    _In_ PCFLT_RELATED_OBJECTS FltObjects,
+    _In_opt_ PVOID CompletionContext,
+    _In_ FLT_POST_OPERATION_FLAGS Flags
+    )
 {
-	UNREFERENCED_PARAMETER(FltObjects);
-	UNREFERENCED_PARAMETER(CompletionContext);
-	UNREFERENCED_PARAMETER(Flags);
+    UNREFERENCED_PARAMETER(FltObjects);
+    UNREFERENCED_PARAMETER(CompletionContext);
+    UNREFERENCED_PARAMETER(Flags);
 
-	PAGED_CODE();
+    PAGED_CODE();
 
     NpEtwTraceFuncEntry(ReadWrite, TRACE_LEVEL_RESERVED6);
 
-	__try {
-		if (Data->IoStatus.Information == 0) {
-			__leave;
-		}
+    __try {
+        if (Data->IoStatus.Information == 0) {
+            __leave;
+        }
 
-		NTSTATUS status = FltLockUserBuffer(Data);
-		if (!NT_SUCCESS(status)) {
+        NTSTATUS status = FltLockUserBuffer(Data);
+        if (!NT_SUCCESS(status)) {
             NpEtwTraceError(ReadWrite, "Locking user buffer in post-write failed with status %!STATUS!", status);
-			__leave;
-		}
+            __leave;
+        }
 
-		__try {
-			auto& writeParams = Data->Iopb->Parameters.Write;
+        __try {
+            auto& writeParams = Data->Iopb->Parameters.Write;
 
-			PUCHAR writeBuffer = static_cast<PUCHAR>(MmGetSystemAddressForMdlSafe(
+            PUCHAR writeBuffer = static_cast<PUCHAR>(MmGetSystemAddressForMdlSafe(
                 writeParams.MdlAddress,
                 LowPagePriority | MdlMappingNoWrite | MdlMappingNoExecute));
-			if (!writeBuffer) {
-				__leave;
-			}
+            if (!writeBuffer) {
+                __leave;
+            }
 
             auto len = static_cast<short>(min(MAXSHORT, Data->IoStatus.Information));            
             NpEtwTraceInfo(ReadWrite, "IRP_MJ_WRITE Cbd 0x%p FileObject 0x%p Information 0x%Ix Data: %!HEXDUMP!",
@@ -448,16 +448,16 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
             EventWriteWriteEvent(
                 nullptr, Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, HandleToUlong(PsGetThreadId(Data->Thread)),
                 static_cast<ULONG>(Data->IoStatus.Information), Data->Flags, writeBuffer);
-		} __except (FsRtlIsNtstatusExpected(GetExceptionCode()) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+        } __except (FsRtlIsNtstatusExpected(GetExceptionCode()) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
             NpEtwTraceError(ReadWrite, "Accessing user buffer in post-write failed with status %!STATUS!", GetExceptionCode());
-		}
-	} __finally {
+        }
+    } __finally {
 
-	}
+    }
 
     NpEtwTraceFuncExit(ReadWrite, TRACE_LEVEL_RESERVED6);
 
-	return FLT_POSTOP_FINISHED_PROCESSING;
+    return FLT_POSTOP_FINISHED_PROCESSING;
 }
 
 FLT_PREOP_CALLBACK_STATUS FLTAPI NpEtwPreOperation(
@@ -466,8 +466,8 @@ FLT_PREOP_CALLBACK_STATUS FLTAPI NpEtwPreOperation(
     _Flt_CompletionContext_Outptr_ PVOID *CompletionContext
 )
 {
-	UNREFERENCED_PARAMETER(Data);
-	UNREFERENCED_PARAMETER(FltObjects);
+    UNREFERENCED_PARAMETER(Data);
+    UNREFERENCED_PARAMETER(FltObjects);
     UNREFERENCED_PARAMETER(CompletionContext);
 
     return FLT_PREOP_SUCCESS_WITH_CALLBACK;

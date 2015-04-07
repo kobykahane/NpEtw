@@ -2,25 +2,25 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:difx="http://schemas.microsoft.com/wix/DifxAppExtension"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
-	<Product Id="*" Name="NpEtw" Language="1033" Version="0.1.0.0" Manufacturer="NpEtw" UpgradeCode="30fd8283-bc5a-44c3-b31b-435f08fd1c28">
-		<Package InstallerVersion="405" Compressed="yes" InstallScope="perMachine" />
+  <Product Id="*" Name="NpEtw" Language="1033" Version="0.1.0.0" Manufacturer="NpEtw" UpgradeCode="30fd8283-bc5a-44c3-b31b-435f08fd1c28">
+    <Package InstallerVersion="405" Compressed="yes" InstallScope="perMachine" />
 
     <Condition Message="Windows 8 or later required.">
       <![CDATA[Installed OR (VersionNT >= 602)]]>
     </Condition>
     
-		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-		<MediaTemplate EmbedCab="yes" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
 
     <UIRef Id="WixUI_ErrorProgressText" />
 
-		<Feature Id="ProductFeature" Title="NpEtw" Level="1">
-			<ComponentGroupRef Id="ProductComponents" />
-		</Feature>
-	</Product>
+    <Feature Id="ProductFeature" Title="NpEtw" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+  </Product>
 
-	<Fragment>
-		<Directory Id="TARGETDIR" Name="SourceDir">
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
       <?if $(var.Platform) = x64 ?>
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="NpEtw" />
@@ -30,11 +30,11 @@
         <Directory Id="INSTALLFOLDER" Name="NpEtw" />
       </Directory>
       <?endif ?>
-		</Directory>
-	</Fragment>
+    </Directory>
+  </Fragment>
 
-	<Fragment>
-		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
       <Component Id="NpEtw.sys" Guid="*">
         <File Id="NpEtw.sys" Name="NpEtw.sys" Source="$(var.NpEtw.TargetDir)NpEtw\NpEtw.sys" KeyPath="yes" Checksum="yes" />
       </Component>
@@ -50,6 +50,6 @@
           <util:EventManifest MessageFile="[#NpEtw.sys]" ParameterFile="[#NpEtw.sys]" ResourceFile="[#NpEtw.sys]" />
         </File>
       </Component>
-		</ComponentGroup>
-	</Fragment>
+    </ComponentGroup>
+  </Fragment>
 </Wix>
