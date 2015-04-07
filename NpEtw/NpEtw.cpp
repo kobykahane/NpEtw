@@ -357,16 +357,19 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostReadWhenSafe(
 		__try {
 			auto& readParams = Data->Iopb->Parameters.Read;
 
-			PCHAR readBuffer = static_cast<PCHAR>(MmGetSystemAddressForMdlSafe(
+			PUCHAR readBuffer = static_cast<PUCHAR>(MmGetSystemAddressForMdlSafe(
                 readParams.MdlAddress,
                 LowPagePriority | MdlMappingNoWrite | MdlMappingNoExecute));
 			if (!readBuffer) {
 				__leave;
 			}
 
-            auto len = static_cast<short>(min(MAXSHORT, Data->IoStatus.Information));
+            auto len = static_cast<short>(min(MAXSHORT, Data->IoStatus.Information));           
             NpEtwTraceInfo(ReadWrite, "IRP_MJ_READ Cbd 0x%p FileObject 0x%p Information 0x%Ix Data: %!HEXDUMP!",
                 Data, FltObjects->FileObject, Data->IoStatus.Information, log_xstr(readBuffer, len));
+            EventWriteReadEvent(
+                nullptr, Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, HandleToUlong(PsGetThreadId(Data->Thread)),
+                static_cast<ULONG>(Data->IoStatus.Information), Data->Flags, readBuffer);
 		} __except (FsRtlIsNtstatusExpected(GetExceptionCode()) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
             NpEtwTraceError(ReadWrite, "Accessing user buffer in post-read failed with status %!STATUS!", GetExceptionCode());
 		}
@@ -432,7 +435,7 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
 		__try {
 			auto& writeParams = Data->Iopb->Parameters.Write;
 
-			PCHAR writeBuffer = static_cast<PCHAR>(MmGetSystemAddressForMdlSafe(
+			PUCHAR writeBuffer = static_cast<PUCHAR>(MmGetSystemAddressForMdlSafe(
                 writeParams.MdlAddress,
                 LowPagePriority | MdlMappingNoWrite | MdlMappingNoExecute));
 			if (!writeBuffer) {
@@ -442,6 +445,9 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
             auto len = static_cast<short>(min(MAXSHORT, Data->IoStatus.Information));            
             NpEtwTraceInfo(ReadWrite, "IRP_MJ_WRITE Cbd 0x%p FileObject 0x%p Information 0x%Ix Data: %!HEXDUMP!",
                 Data, FltObjects->FileObject, Data->IoStatus.Information, log_xstr(writeBuffer, len));
+            EventWriteWriteEvent(
+                nullptr, Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, HandleToUlong(PsGetThreadId(Data->Thread)),
+                static_cast<ULONG>(Data->IoStatus.Information), Data->Flags, writeBuffer);
 		} __except (FsRtlIsNtstatusExpected(GetExceptionCode()) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
             NpEtwTraceError(ReadWrite, "Accessing user buffer in post-write failed with status %!STATUS!", GetExceptionCode());
 		}
