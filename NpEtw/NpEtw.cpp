@@ -260,7 +260,6 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostCreateNamedPipe(
             }         
             break;
         case IRP_MJ_CREATE_NAMED_PIPE:
-            nullptr;
             {
                 auto& createPipeParameters = Data->Iopb->Parameters.CreatePipe;
                 auto& createOptions = createPipeParameters.Options;
@@ -292,6 +291,7 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostCreateNamedPipe(
                     nullptr, Data, fileObject, fileKey, issuingThreadId, ioStatus, createOptions, shareAccess, fileName, namedPipeType, readMode,
                     completionMode, maxInstances, inboundQuota, outboundQuota, timeoutSpecified, defaultTimeout);
             }
+            break;
         }
     } __finally {
         if (fileNameInfo) {
