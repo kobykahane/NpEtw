@@ -6,6 +6,7 @@
         WPP_DEFINE_BIT(General) \
         WPP_DEFINE_BIT(Create) \
         WPP_DEFINE_BIT(ReadWrite) \
+        WPP_DEFINE_BIT(FSCtl) \
     )
 
 #define WPP_LEVEL_FLAGS_LOGGER(level, flags) WPP_LEVEL_LOGGER(flags)

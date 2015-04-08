@@ -12,6 +12,7 @@ extern "C" {
 #pragma alloc_text(PAGE, NpEtwPostCreateNamedPipe)
 #pragma alloc_text(PAGE, NpEtwPostReadWhenSafe)
 #pragma alloc_text(PAGE, NpEtwPostWriteWhenSafe)
+#pragma alloc_text(PAGE, NpEtwPostFSCtlWhenSafe)
 #endif
 
 PFLT_FILTER gFilterHandle = nullptr;
@@ -27,7 +28,7 @@ __declspec(allocate("INIT")) CONST FLT_OPERATION_REGISTRATION OperationCallbacks
 //  { IRP_MJ_SET_INFORMATION,     0, NpEtwPreOperation,       NpEtwPostOperation       },
 //  { IRP_MJ_FLUSH_BUFFERS,       0, NpEtwPreOperation,       NpEtwPostOperation       },
     { IRP_MJ_DIRECTORY_CONTROL,   0, NpEtwPreOperation,       NpEtwPostOperation       },
-    { IRP_MJ_FILE_SYSTEM_CONTROL, 0, NpEtwPreOperation,       NpEtwPostOperation       },
+    { IRP_MJ_FILE_SYSTEM_CONTROL, 0, NpEtwPreOperation,       NpEtwPostFSCtl           },
 //  { IRP_MJ_CLEANUP,             0, NpEtwPreOperation,       NpEtwPostOperation       },
 //  { IRP_MJ_CREATE_MAILSLOT,     0, NpEtwPreOperation,       NpEtwPostOperation       },
 //  { IRP_MJ_QUERY_SECURITY,      0, NpEtwPreOperation,       NpEtwPostOperation       },
@@ -456,6 +457,101 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
     }
 
     NpEtwTraceFuncExit(ReadWrite, TRACE_LEVEL_RESERVED6);
+
+    return FLT_POSTOP_FINISHED_PROCESSING;
+}
+
+FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostFSCtl(
+    _Inout_ PFLT_CALLBACK_DATA Data,
+    _In_ PCFLT_RELATED_OBJECTS FltObjects,
+    _In_opt_ PVOID CompletionContext,
+    _In_ FLT_POST_OPERATION_FLAGS Flags
+    )
+{
+    NpEtwTraceFuncEntry(FSCtl, TRACE_LEVEL_RESERVED6);
+
+    FLT_POSTOP_CALLBACK_STATUS postOperationStatus = FLT_POSTOP_FINISHED_PROCESSING;
+
+    if (NT_SUCCESS(Data->IoStatus.Status)) {
+        if (!FltDoCompletionProcessingWhenSafe(Data, FltObjects, CompletionContext, Flags, NpEtwPostFSCtlWhenSafe, &postOperationStatus)) {
+            NpEtwTraceError(FSCtl, "Posting pipe FSCTL completion failed.");
+        }
+    } else {
+        NpEtwTraceError(FSCtl, "Pipe FSCTL failed with status %!STATUS!", Data->IoStatus.Status);
+    }
+
+    NpEtwTraceFuncExit(FSCtl, TRACE_LEVEL_RESERVED6);
+
+    return postOperationStatus;
+}
+
+FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostFSCtlWhenSafe(
+    _Inout_ PFLT_CALLBACK_DATA Data,
+    _In_ PCFLT_RELATED_OBJECTS FltObjects,
+    _In_opt_ PVOID CompletionContext,
+    _In_ FLT_POST_OPERATION_FLAGS Flags
+    )
+{
+    PAGED_CODE();
+
+    UNREFERENCED_PARAMETER(FltObjects);
+    UNREFERENCED_PARAMETER(CompletionContext);
+    UNREFERENCED_PARAMETER(Flags);
+
+    NpEtwTraceFuncEntry(FSCtl, TRACE_LEVEL_RESERVED6);
+
+    __try {
+        auto& fsctl = Data->Iopb->Parameters.FileSystemControl.Common.FsControlCode;
+        switch (fsctl) {
+        case FSCTL_PIPE_ASSIGN_EVENT:
+            break;
+        case FSCTL_PIPE_DISCONNECT:
+            break;
+        case FSCTL_PIPE_LISTEN:
+            break;
+        case FSCTL_PIPE_PEEK:
+            break;
+        case FSCTL_PIPE_QUERY_EVENT:
+            break;
+        case FSCTL_PIPE_TRANSCEIVE:
+            break;
+        case FSCTL_PIPE_WAIT:
+            break;
+        case FSCTL_PIPE_IMPERSONATE:
+            break;
+        case FSCTL_PIPE_SET_CLIENT_PROCESS:
+            break;
+        case FSCTL_PIPE_QUERY_CLIENT_PROCESS:
+            break;
+        case FSCTL_PIPE_GET_PIPE_ATTRIBUTE:
+            break;
+        case FSCTL_PIPE_SET_PIPE_ATTRIBUTE:
+            break;
+        case FSCTL_PIPE_GET_CONNECTION_ATTRIBUTE:
+            break;
+        case FSCTL_PIPE_SET_CONNECTION_ATTRIBUTE:
+            break;
+        case FSCTL_PIPE_GET_HANDLE_ATTRIBUTE:
+            break;
+        case FSCTL_PIPE_SET_HANDLE_ATTRIBUTE:
+            break;
+        case FSCTL_PIPE_FLUSH:
+            break;
+        case FSCTL_PIPE_INTERNAL_READ:
+            break;
+        case FSCTL_PIPE_INTERNAL_WRITE:
+            break;
+        case FSCTL_PIPE_INTERNAL_TRANSCEIVE:
+            break;
+        case FSCTL_PIPE_INTERNAL_READ_OVFLOW:
+            break;
+        default:
+            NpEtwTraceWarning(FSCtl, "Unknown FSCTL 0x%08lx", fsctl);
+            break;
+        }
+    } __finally {
+        NpEtwTraceFuncExit(FSCtl, TRACE_LEVEL_RESERVED6);
+    }
 
     return FLT_POSTOP_FINISHED_PROCESSING;
 }

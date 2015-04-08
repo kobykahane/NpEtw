@@ -66,6 +66,20 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
     _In_ FLT_POST_OPERATION_FLAGS Flags
     );
 
+FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostFSCtl(
+    _Inout_ PFLT_CALLBACK_DATA Data,
+    _In_ PCFLT_RELATED_OBJECTS FltObjects,
+    _In_opt_ PVOID CompletionContext,
+    _In_ FLT_POST_OPERATION_FLAGS Flags
+    );
+
+FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostFSCtlWhenSafe(
+    _Inout_ PFLT_CALLBACK_DATA Data,
+    _In_ PCFLT_RELATED_OBJECTS FltObjects,
+    _In_opt_ PVOID CompletionContext,
+    _In_ FLT_POST_OPERATION_FLAGS Flags
+    );
+
 FLT_PREOP_CALLBACK_STATUS FLTAPI NpEtwPreOperation(
     _Inout_ PFLT_CALLBACK_DATA Data,
     _In_ PCFLT_RELATED_OBJECTS FltObjects,
