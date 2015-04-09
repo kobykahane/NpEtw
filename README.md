@@ -10,6 +10,6 @@ The minifilter driver itself requires Visual Studio 2015 CTP6 and the Windows Dr
 
 ##Example usage
 
-* Enable test signing in the target system by running `bcdedit /testsigning on` from an elevated command prompt.
+* Enable test signing in the target system by running `bcdedit /set testsigning on` from an elevated command prompt.
 * Install the NpEtw MSI package.
 * Run Microsoft Message Analyzer. Go to the File menu -> New session -> Live trace. In the *Add Provider* textbox, type NpEtw and click it. NpEtw will appear in the ETW Providers list. Click Start to start the session.
