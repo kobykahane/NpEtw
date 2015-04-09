@@ -90,5 +90,5 @@ DiskId1                 = "NpEtw Device Installation Disk"
 ;Instances specific information.
 DefaultInstance         = "NpEtw Instance"
 Instance1.Name          = "NpEtw Instance"
-Instance1.Altitude       = "389512" ; TODO Change altitude after receiving an official allocation http://connect.microsoft.com/site221/content/content.aspx?ContentID=2512
+Instance1.Altitude       = "389020"
 Instance1.Flags         = 0x0              ; Allow all attachments
