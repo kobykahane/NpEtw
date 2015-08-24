@@ -6,7 +6,7 @@ NpEtw is implemented as a file system minifilter driver that attaches to the nam
 
 ##Building
 
-The minifilter driver itself requires Visual Studio 2015 CTP6 and the Windows Driver Kit 10 preview to build. The project that builds the MSI package requires version 3.10 of the Wix (Windows Installer XML) toolset.
+The minifilter driver itself requires Visual Studio 2015 and Windows Driver Kit 10 to build. The project that builds the MSI package requires version 3.10 or higher of the Wix (Windows Installer XML) toolset.
 
 ##Example usage
 
