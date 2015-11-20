@@ -184,8 +184,8 @@ FLT_PREOP_CALLBACK_STATUS FLTAPI NpEtwPreCreateNamedPipe(
         // - If the create succeeds, this is the cheapest place to pick it up since FileObject->FileName is valid.		
         NTSTATUS status = FltGetFileNameInformation(Data, FLT_FILE_NAME_OPENED | FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP, &fileNameInfo);
         if (!NT_SUCCESS(status)) {
-            NpEtwTraceError(Create, "Retreiving pipe name in pre-create/createnp failed with status %!STATUS!", status);
-            __leave;
+            NpEtwTraceError(Create, "Retrieving pipe name in pre-create/createnp failed with status %!STATUS!", status);
+            __leave
         }
 
         *CompletionContext = fileNameInfo;
