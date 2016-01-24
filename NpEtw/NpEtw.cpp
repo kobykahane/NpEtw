@@ -181,7 +181,7 @@ FLT_PREOP_CALLBACK_STATUS FLTAPI NpEtwPreCreateNamedPipe(
     __try {
         // We pick up the name in pre-create for two reasons:
         // - If the create fails, the name cannot be queried in post-create.
-        // - If the create succeeds, this is the cheapest place to pick it up since FileObject->FileName is valid.		
+        // - If the create succeeds, this is the cheapest place to pick it up since FileObject->FileName is valid.
         NTSTATUS status = FltGetFileNameInformation(Data, FLT_FILE_NAME_OPENED | FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP, &fileNameInfo);
         if (!NT_SUCCESS(status)) {
             NpEtwTraceError(Create, "Retrieving pipe name in pre-create/createnp failed with status %!STATUS!", status);
@@ -441,7 +441,7 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostWriteWhenSafe(
                 __leave;
             }
 
-            auto len = static_cast<short>(min(MAXSHORT, Data->IoStatus.Information));            
+            auto len = static_cast<short>(min(MAXSHORT, Data->IoStatus.Information));
             NpEtwTraceInfo(ReadWrite, "IRP_MJ_WRITE Cbd 0x%p FileObject 0x%p Information 0x%Ix Data: %!HEXDUMP!",
                 Data, FltObjects->FileObject, Data->IoStatus.Information, log_xstr(writeBuffer, len));
             EventWriteWriteEvent(
