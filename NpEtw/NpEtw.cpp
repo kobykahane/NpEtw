@@ -497,88 +497,88 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostFSCtlWhenSafe(
         auto& fsctl = Data->Iopb->Parameters.FileSystemControl.Common.FsControlCode;
         switch (fsctl) {
         case FSCTL_PIPE_ASSIGN_EVENT:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_ASSIGN_EVENT Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_ASSIGN_EVENT Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_DISCONNECT:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_DISCONNECT Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_DISCONNECT Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_LISTEN:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_LISTEN Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_LISTEN Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_PEEK:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_PEEK Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_PEEK Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_QUERY_EVENT:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_QUERY_EVENT Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_QUERY_EVENT Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_TRANSCEIVE:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_TRANSCEIVE Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_TRANSCEIVE Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_WAIT:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_WAIT Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_WAIT Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_IMPERSONATE:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_IMPERSONATE Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_IMPERSONATE Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_SET_CLIENT_PROCESS:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_SET_CLIENT_PROCESS Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_SET_CLIENT_PROCESS Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_QUERY_CLIENT_PROCESS:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_QUERY_CLIENT_PROCESS Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_QUERY_CLIENT_PROCESS Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_GET_PIPE_ATTRIBUTE:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_GET_PIPE_ATTRIBUTE Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_GET_PIPE_ATTRIBUTE Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_SET_PIPE_ATTRIBUTE:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_SET_PIPE_ATTRIBUTE Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_SET_PIPE_ATTRIBUTE Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_GET_CONNECTION_ATTRIBUTE:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_GET_CONNECTION_ATTRIBUTE Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_GET_CONNECTION_ATTRIBUTE Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_SET_CONNECTION_ATTRIBUTE:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_SET_CONNECTION_ATTRIBUTE Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_SET_CONNECTION_ATTRIBUTE Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_GET_HANDLE_ATTRIBUTE:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_GET_HANDLE_ATTRIBUTE Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_GET_HANDLE_ATTRIBUTE Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_SET_HANDLE_ATTRIBUTE:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_SET_HANDLE_ATTRIBUTE Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_SET_HANDLE_ATTRIBUTE Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_FLUSH:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_FLUSH Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_FLUSH Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_INTERNAL_READ:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_INTERNAL_READ Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_INTERNAL_READ Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_INTERNAL_WRITE:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_INTERNAL_WRITE Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_INTERNAL_WRITE Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_INTERNAL_TRANSCEIVE:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_TRANSCEIVE Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_TRANSCEIVE Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         case FSCTL_PIPE_INTERNAL_READ_OVFLOW:
-            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_READ_OVFLOW Cbd 0x%p FileObject 0x%p FileKey 0x%p",
-                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext);
+            NpEtwTraceInfo(FSCtl, "FSCTL_PIPE_READ_OVFLOW Cbd 0x%p FileObject 0x%p FileKey 0x%p Status %!STATUS!",
+                Data, FltObjects->FileObject, FltObjects->FileObject->FsContext, Data->IoStatus.Status);
             break;
         default:
             NpEtwTraceWarning(FSCtl, "Unknown FSCTL 0x%08lx", fsctl);
