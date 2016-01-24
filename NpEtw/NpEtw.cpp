@@ -470,12 +470,8 @@ FLT_POSTOP_CALLBACK_STATUS FLTAPI NpEtwPostFSCtl(
 
     FLT_POSTOP_CALLBACK_STATUS postOperationStatus = FLT_POSTOP_FINISHED_PROCESSING;
 
-    if (NT_SUCCESS(Data->IoStatus.Status)) {
-        if (!FltDoCompletionProcessingWhenSafe(Data, FltObjects, CompletionContext, Flags, NpEtwPostFSCtlWhenSafe, &postOperationStatus)) {
-            NpEtwTraceError(FSCtl, "Posting pipe FSCTL completion failed.");
-        }
-    } else {
-        NpEtwTraceError(FSCtl, "Pipe FSCTL failed with status %!STATUS!", Data->IoStatus.Status);
+    if (!FltDoCompletionProcessingWhenSafe(Data, FltObjects, CompletionContext, Flags, NpEtwPostFSCtlWhenSafe, &postOperationStatus)) {
+        NpEtwTraceError(FSCtl, "Posting pipe FSCTL completion failed.");
     }
 
     NpEtwTraceFuncExit(FSCtl, TRACE_LEVEL_RESERVED6);
