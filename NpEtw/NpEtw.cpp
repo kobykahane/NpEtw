@@ -82,7 +82,7 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 
             NTSTATUS etwStatus = EventUnregisterNpEtw();
             if (!NT_SUCCESS(etwStatus)) {
-                NpEtwTraceError(General, "EventUnregisterNpEtw failed with status %!STATUS!", status);
+                NpEtwTraceError(General, "EventUnregisterNpEtw failed with status %!STATUS!", etwStatus);
             }
 
             WPP_CLEANUP(DriverObject);
