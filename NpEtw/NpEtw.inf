@@ -3,53 +3,55 @@
 ;;;
 
 [Version]
-Signature   = "$Windows NT$"
+Signature = "$Windows NT$"
 Class = "ActivityMonitor"
 ClassGuid = {b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2}
-Provider    = %ManufacturerName%
-DriverVer   = 
+Provider = %ManufacturerName%
+DriverVer =
 DriverPackageType = FileSystemMinifilter
+PnpLockdown = 1
 CatalogFile = NpEtw.cat
 
 [DestinationDirs]
-DefaultDestDir          = 12
-MiniFilter.DriverFiles  = 12            ;%windir%\system32\drivers
+DefaultDestDir = 12
+MiniFilter.DriverFiles = 12 ; %windir%\system32\drivers
 
 ;;
 ;; Default install sections
 ;;
 
-[DefaultInstall]
-OptionDesc          = %ServiceDescription%
-CopyFiles           = MiniFilter.DriverFiles
+[DefaultInstall.NT$ARCH$]
+OptionDesc = %ServiceDescription%
+CopyFiles = MiniFilter.CopyDriverFiles
 
-[DefaultInstall.Services]
-AddService          = %ServiceName%,,MiniFilter.Service
+[DefaultInstall.NT$ARCH$.Services]
+AddService = %ServiceName%,,MiniFilter.Service
 
 ;;
 ;; Default uninstall sections
 ;;
 
-[DefaultUninstall]
-DelFiles   = MiniFilter.DriverFiles
+[DefaultUninstall.NT$ARCH$]
+LegacyUninstall = 1
+DelFiles = MiniFilter.DelDriverFiles
 
-[DefaultUninstall.Services]
-DelService = %ServiceName%,0x200      ;Ensure service is stopped before deleting
+[DefaultUninstall.NT$ARCH$.Services]
+DelService = %ServiceName%,0x200 ; Ensure service is stopped before deleting
 
 ;
 ; Services Section
 ;
 
 [MiniFilter.Service]
-DisplayName      = %ServiceName%
-Description      = %ServiceDescription%
-ServiceBinary    = %12%\%DriverName%.sys        ;%windir%\system32\drivers\
-Dependencies     = "FltMgr"
-ServiceType      = 2                            ;SERVICE_FILE_SYSTEM_DRIVER
-StartType        = 3                            ;SERVICE_DEMAND_START
-ErrorControl     = 1                            ;SERVICE_ERROR_NORMAL
+DisplayName = %ServiceName%
+Description = %ServiceDescription%
+ServiceBinary = %12%\%DriverName%.sys ; %windir%\system32\drivers\
+Dependencies = "FltMgr"
+ServiceType = 2 ; SERVICE_FILE_SYSTEM_DRIVER
+StartType = 3  ; SERVICE_DEMAND_START
+ErrorControl = 1 ; SERVICE_ERROR_NORMAL
 LoadOrderGroup = "FSFilter Activity Monitor"
-AddReg           = MiniFilter.AddRegistry
+AddReg = MiniFilter.AddRegistry
 
 ;
 ; Registry Modifications
@@ -66,7 +68,10 @@ HKR,"Instances\"%Instance1.Name%,"Flags",0x00010001,%Instance1.Flags%
 ; Copy Files
 ;
 
-[MiniFilter.DriverFiles]
+[MiniFilter.CopyDriverFiles]
+%DriverName%.sys
+
+[MiniFilter.DelDriverFiles]
 %DriverName%.sys
 
 [SourceDisksFiles]
@@ -80,15 +85,14 @@ NpEtw.sys = 1,,
 ;;
 
 [Strings]
-; TODO - Add your manufacturer
-ManufacturerName        = "Koby Kahane"
-ServiceDescription      = "NpEtw Mini-Filter Driver"
-ServiceName             = "NpEtw"
-DriverName              = "NpEtw"
-DiskId1                 = "NpEtw Device Installation Disk"
+ManufacturerName = "Koby Kahane"
+ServiceDescription = "NpEtw Mini-Filter Driver"
+ServiceName = "NpEtw"
+DriverName = "NpEtw"
+DiskId1 = "NpEtw Device Installation Disk"
 
 ;Instances specific information.
-DefaultInstance         = "NpEtw Instance"
-Instance1.Name          = "NpEtw Instance"
-Instance1.Altitude       = "389020"
-Instance1.Flags         = 0x0              ; Allow all attachments
+DefaultInstance = "NpEtw Instance"
+Instance1.Name = "NpEtw Instance"
+Instance1.Altitude = "389020"
+Instance1.Flags = 0x0 ; Allow all attachments

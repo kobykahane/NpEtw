@@ -27,9 +27,6 @@
     <ResourceCompile Include="NpEtw.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="$(IntDir)\NpEtwEvents.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NpEtw.cpp">
